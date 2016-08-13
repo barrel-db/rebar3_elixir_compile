@@ -69,7 +69,6 @@ maybe_create_deps_app(Mix, DepsDir) ->
 
 
 rebar_to_mix_deps([], MixDeps) ->
-    rebar_api:console("===>  MixDeps ~p", [MixDeps]),
     string:join(MixDeps, ", \n");
 
 rebar_to_mix_deps([Dep | Deps], MixDeps) ->
