@@ -16,7 +16,12 @@ Add the plugin to your rebar config:
     {elixir_opts, 
       [{lib_dir, "/usr/local/lib/elixir/lib/"},
       {bin_dir, "/usr/local/bin/"},
-      {env, dev}]
+      {env, dev},
+      {deps, [
+        {hooks, {git, "https://github.com/barrel-db/hooks", {branch, "master"}}},
+        {plug, "1.1.6"}
+      ]}]
+        
     }.
 
 Place your elixir mix applications in ./elixir_libs.
