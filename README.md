@@ -8,7 +8,7 @@ Use
 Add the plugin to your rebar config:
 
     {plugins, [
-        { rebar3_elixir, ".*", {git, "https://github.com/sivsushruth/rebar3_elixir.git", {branch, "master"}}}
+        { rebar3_elixir, ".*", {git, "https://github.com/barrel-db/rebar3_elixir.git", {branch, "master"}}}
     ]}.
     
     {deps, [
