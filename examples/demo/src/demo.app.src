@@ -5,7 +5,9 @@
   {mod, { demo_app, []}},
   {applications,
    [kernel,
-    stdlib
+    stdlib,
+    crypto,
+    elixir
    ]},
   {env,[]},
   {modules, []},
