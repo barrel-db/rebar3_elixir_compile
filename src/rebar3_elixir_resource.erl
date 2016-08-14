@@ -11,10 +11,8 @@ lock(_Dir, Source) ->
     Source.
 
 download(Dir, {elixir, Name, Vsn}, State) ->
-    rebar_api:console("===> Adding Dir ~p", [Dir]),
     Pkg = {pkg, Name, Vsn},
     fetch_and_compile(State, Dir, Pkg),
-    rebar_api:console("===> Adding Elixir Deps download ~p", [Name]),
     {ok, true}.
 
 needs_update(Dir, {pkg, _Name, Vsn}) ->
@@ -43,7 +41,7 @@ fetch_and_compile(State, Dir, Pkg = {pkg, Name, _Vsn}) ->
 
 fetch({pkg, Name_, Vsn_}) ->
     Dir = filename:join([filename:absname("_elixir_build"), Name_]),
-    Name = atom_to_binary(Name_, utf8), 
+    Name = list_to_binary(Name_), 
     Vsn  = list_to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->

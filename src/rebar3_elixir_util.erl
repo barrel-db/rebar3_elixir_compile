@@ -10,8 +10,7 @@ add_elixir(State) ->
     MixState.
 
 get_details(State) ->
-    RebarConfig = rebar_file_utils:try_consult(rebar_dir:root_dir(State) ++ "/rebar.config"),
-    {elixir_opts, Config} = lists:keyfind(elixir_opts, 1, RebarConfig),
+    Config = rebar_state:get(State, elixir_opts),
     {lib_dir, LibDir} = lists:keyfind(lib_dir, 1, Config),
     {bin_dir, BinDir} = lists:keyfind(bin_dir, 1, Config),
     {env, Env} = lists:keyfind(env, 1, Config),
@@ -40,11 +39,14 @@ compile_libs(State, [App | Apps]) ->
         dev -> ""; 
         prod -> "MIX_ENV=prod "
     end,    
-    rebar_utils:sh(Profile ++ Mix ++ "deps.get", [{cd, AppDir}, {use_stdout, true}]),
-    rebar_utils:sh(Profile ++ Mix ++ "compile", [{cd, AppDir}, {use_stdout, true}]),
-    LibsDir = filename:join([AppDir, "_build/", Env , "lib/"]),
-    {ok, Libs} = file:list_dir_all(LibsDir),
-    transfer_libs(State, Libs, LibsDir),
+    case ec_file:exists(filename:join(AppDir, "mix.exs")) of
+        true -> rebar_utils:sh(Profile ++ Mix ++ "deps.get", [{cd, AppDir}, {use_stdout, true}]),
+                rebar_utils:sh(Profile ++ Mix ++ "compile", [{cd, AppDir}, {use_stdout, true}]),
+                LibsDir = filename:join([AppDir, "_build/", Env , "lib/"]),
+                {ok, Libs} = file:list_dir_all(LibsDir),
+                transfer_libs(State, Libs, LibsDir);
+        false -> ok                 
+    end,
     compile_libs(State, Apps).
 
 transfer_libs(_State, [], _LibsDir) ->
