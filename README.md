@@ -28,5 +28,5 @@ If you want to modify elixir bin and lib directories, add to elixir opts the fol
     {bin_dir, "/usr/local/bin/"}
 
 Place your elixir mix applications in ./elixir_libs.
-
+The plugin also works with a rebar release.
 
