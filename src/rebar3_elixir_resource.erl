@@ -41,8 +41,8 @@ fetch_and_compile(State, Dir, Pkg = {pkg, Name, _Vsn}) ->
 
 fetch({pkg, Name_, Vsn_}) ->
     Dir = filename:join([filename:absname("_elixir_build"), Name_]),
-    Name = list_to_binary(Name_), 
-    Vsn  = list_to_binary(Vsn_),
+    Name = rebar3_elixir_util:to_binary(Name_), 
+    Vsn  = rebar3_elixir_util:to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->
             CDN = "https://repo.hex.pm/tarballs",

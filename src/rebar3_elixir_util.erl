@@ -1,6 +1,12 @@
 -module(rebar3_elixir_util).
 
--export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3]).
+-export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1]).
+
+to_binary(V) when is_binary(V) -> V;
+to_binary(V) when is_list(V) -> list_to_binary(V);
+to_binary(V) when is_integer(V) -> integer_to_binary(V);
+to_binary(V) when is_atom(V) -> atom_to_binary(V, latin1);
+to_binary(_) -> erlang:error(badarg).
 
 add_elixir(State) ->
     {BinDir, Env, Config, LibDir} = rebar3_elixir_util:get_details(State),
