@@ -8,7 +8,7 @@ Use
 Add the plugin to your rebar config:
 
     {plugins, [
-        { rebar3_elixir, ".*", {git, "https://github.com/sivsushruth/rebar3_elixir.git", {branch, "master"}}}
+        { rebar3_elixir, ".*", {git, "https://github.com/barrel-db/rebar3_elixir.git", {branch, "master"}}}
     ]}.
     
     {deps, [
@@ -28,5 +28,5 @@ If you want to modify elixir bin and lib directories, add to elixir opts the fol
     {bin_dir, "/usr/local/bin/"}
 
 Place your elixir mix applications in ./elixir_libs.
-
+The plugin also works with a rebar release.
 
