@@ -48,7 +48,9 @@ add_states(State, BinDir, Env, Config) ->
     rebar_state:set(ElixirState, mix, filename:join(BinDir, "mix ")).    
 
 compile_libs(State) ->
-    {ok, Apps} = rebar_utils:list_dir(rebar_state:get(State, elixir_base_dir)),
+    Dir = rebar_state:get(State, elixir_base_dir),
+    file:make_dir(Dir),
+    {ok, Apps} = rebar_utils:list_dir(Dir),
     compile_libs(State, Apps).
 
 compile_libs(_State, []) ->
