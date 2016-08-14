@@ -28,7 +28,7 @@ add_elixir_libs(State) ->
     rebar_api:console("===> Adding Elixir Libs", []),
     State1 = rebar3_elixir_util:add_elixir(State),
     State2 = rebar_state:set(State1, libs_target_dir, default),
-    BaseDirState = rebar_state:set(State2, elixir_base_dir, filename:join(rebar_dir:root_dir(State2), "_elixir_build/")),
+    BaseDirState = rebar_state:set(State2, elixir_base_dir, filename:join(rebar_dir:root_dir(State2), "elixir_libs/")),
     rebar3_elixir_util:compile_libs(BaseDirState),
     ok.
 

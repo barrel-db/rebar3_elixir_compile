@@ -24,7 +24,6 @@ add_states(State, BinDir, Env, Config) ->
     rebar_state:set(ElixirState, mix, BinDir ++ "/mix ").    
 
 compile_libs(State) ->
-    filelib:ensure_dir("_build/default/lib/"),
     {ok, Apps} = rebar_utils:list_dir(rebar_state:get(State, elixir_base_dir)),
     compile_libs(State, Apps).
 
