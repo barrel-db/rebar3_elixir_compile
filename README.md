@@ -22,5 +22,11 @@ Add the plugin to your rebar config:
       ]
     }.
 
+If you want to modify elixir bin and lib directories, add to elixir opts the following: 
+
+    {lib_dir, "/usr/local/lib/elixir/lib/"},
+    {bin_dir, "/usr/local/bin/"}
+
 Place your elixir mix applications in ./elixir_libs.
+
 
