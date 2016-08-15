@@ -1,4 +1,4 @@
--module(rebar3_elixir_resource).
+ -module(rebar3_elixir_resource).
 
 -behaviour(rebar_resource).
 
@@ -8,12 +8,34 @@
         ,make_vsn/1]).
 
 lock(_Dir, Source) ->
+    rebar_api:console("===> Locking ~p", [Source]),
     Source.
 
 download(Dir, {elixir, Name, Vsn}, State) ->
     Pkg = {pkg, Name, Vsn},
-    fetch_and_compile(State, Dir, Pkg),
+    {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
+    {deps, Deps} = lists:keyfind(deps, 1 , Config),
+    rebar3_elixir_util:add_deps_to_path(State),
+    case isDepThere(Deps, Name, rebar_dir:deps_dir(State)) of 
+        false -> 
+            fetch_and_compile(State, Dir, Pkg);
+        true ->
+            ok
+    end,
     {ok, true}.
+
+isDepThere(Deps, Name, Dir) ->
+    InConfig = lists:filter(fun ({D, _}) -> rebar3_elixir_util:to_binary(D) == rebar3_elixir_util:to_binary(Name) end, Deps),
+    InDir = filelib:is_dir(filename:join(Dir, Name)),
+    V = case {InConfig, InDir} of
+        {[], true} ->
+            false;
+         {_, true} ->
+             false;
+         {_, false} ->
+             true
+    end,
+    V.
 
 needs_update(Dir, {pkg, _Name, Vsn}) ->
     [AppInfo] = rebar_app_discover:find_apps([Dir], all),
