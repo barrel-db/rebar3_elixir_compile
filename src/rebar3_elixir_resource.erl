@@ -1,4 +1,4 @@
--module(rebar3_elixir_resource).
+ -module(rebar3_elixir_resource).
 
 -behaviour(rebar_resource).
 
@@ -12,10 +12,34 @@ lock(_Dir, Source) ->
 
 download(Dir, {elixir, Name, Vsn}, State) ->
     Pkg = {pkg, Name, Vsn},
-    fetch_and_compile(State, Dir, Pkg),
+    {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
+    {deps, Deps} = lists:keyfind(deps, 1 , Config),
+    rebar3_elixir_util:add_deps_to_path(State),
+    case isDepThere(Deps, Name, rebar_dir:deps_dir(State)) of 
+        false -> 
+            fetch_and_compile(State, Dir, Pkg);
+        true ->
+            rebar3_elixir_util:maybe_copy_dir(rebar3_elixir_util:fetch_mix_app_from_dep(State, Name), Dir, false),
+            rebar3_elixir_util:maybe_copy_dir(filename:join([rebar_dir:deps_dir(State), Name]), Dir, false)
+    end,
     {ok, true}.
 
+isDepThere(Deps, Name, Dir) ->
+    InConfig = lists:filter(fun ({D, _}) -> rebar3_elixir_util:to_binary(D) == rebar3_elixir_util:to_binary(Name) end, Deps),
+    InDir = filelib:is_dir(filename:join([Dir, Name, "ebin"])),
+    case {InConfig, InDir} of
+        {[], true} ->
+            true;
+         {_, true} ->
+             false;
+        {[], false} ->
+             true;          
+         {_, false} ->
+             false
+    end.
+
 needs_update(Dir, {pkg, _Name, Vsn}) ->
+    rebar_api:console("Checking for update, ~p", _Name),
     [AppInfo] = rebar_app_discover:find_apps([Dir], all),
     case rebar_app_info:original_vsn(AppInfo) =:= ec_cnv:to_list(Vsn) of
         true ->
