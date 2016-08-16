@@ -30,7 +30,6 @@ add_elixir_libs(State) ->
     State2 = rebar_state:set(State1, libs_target_dir, default),
     BaseDirState = rebar_state:set(State2, elixir_base_dir, filename:join(rebar_dir:root_dir(State2), "elixir_libs/")),
     State3 = rebar3_elixir_util:compile_libs(BaseDirState),
-    rebar_api:console("~p", [rebar_state:deps_names(State)]),
     {ok, State3}.
 
 format_error(Reason) ->

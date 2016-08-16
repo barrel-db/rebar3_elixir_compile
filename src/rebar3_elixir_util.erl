@@ -1,6 +1,6 @@
 -module(rebar3_elixir_util).
 
--export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2]).
+-export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3]).
 
 -spec to_binary(binary()|list()|integer()|atom()) -> binary().
 to_binary(V) when is_binary(V) -> V;
@@ -26,7 +26,6 @@ add_deps_to_path(State, []) ->
 add_deps_to_path(State, [App | Apps]) ->
     TargetDir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
     State2 = rebar_state:update_code_paths(State, all_deps, TargetDir),
-    rebar_api:console("===> Adding path ~p",[TargetDir]),
     NewLock = add_mix_locks(State2),
     [Profile | _] = rebar_state:current_profiles(State2),
     State3 = rebar_state:set(State2, {deps, Profile}, NewLock),
@@ -37,7 +36,6 @@ add_elixir(State) ->
     MixState = rebar3_elixir_util:add_states(State, BinDir, Env, Config),
     code:add_patha(filename:join(LibDir, "elixir/ebin")),
     code:add_patha(filename:join(LibDir, "mix/ebin")),
-    % file:write_file(filename:join(rebar_dir:root_dir(State), "rebar.lock"), io_lib:format("~p.~n", [add_mix_locks(State)])),
     MixState.
 
 get_details(State) ->
@@ -68,9 +66,7 @@ add_mix_locks(State) ->
     lists:ukeymerge(1, CurrentLock, ExtraLock).
 
 deps_from_mix_lock(State) ->
-    X = lists:map(fun({D, _, _}) -> D end, add_mix_locks(State)),
-    rebar_api:console("DEP FROM LOCK --- ~p", [X]),
-    X.
+    lists:map(fun({D, _, _}) -> D end, add_mix_locks(State)).
 
 mix_to_rebar_lock(State, _Dir, []) ->
     [];

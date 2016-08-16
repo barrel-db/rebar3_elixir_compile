@@ -8,7 +8,6 @@
         ,make_vsn/1]).
 
 lock(_Dir, Source) ->
-    rebar_api:console("===> Locking ~p", [Source]),
     Source.
 
 download(Dir, {elixir, Name, Vsn}, State) ->
@@ -20,24 +19,26 @@ download(Dir, {elixir, Name, Vsn}, State) ->
         false -> 
             fetch_and_compile(State, Dir, Pkg);
         true ->
-            ok
+            rebar3_elixir_util:maybe_copy_dir(filename:join([rebar_dir:deps_dir(State), Name]), Dir, false)
     end,
     {ok, true}.
 
 isDepThere(Deps, Name, Dir) ->
     InConfig = lists:filter(fun ({D, _}) -> rebar3_elixir_util:to_binary(D) == rebar3_elixir_util:to_binary(Name) end, Deps),
-    InDir = filelib:is_dir(filename:join(Dir, Name)),
-    V = case {InConfig, InDir} of
+    InDir = filelib:is_dir(filename:join([Dir, Name, "ebin"])),
+    case {InConfig, InDir} of
         {[], true} ->
-            false;
+            true;
          {_, true} ->
              false;
+        {[], false} ->
+             true;          
          {_, false} ->
-             true
-    end,
-    V.
+             false
+    end.
 
 needs_update(Dir, {pkg, _Name, Vsn}) ->
+    rebar_api:console("Checking for update, ~p", _Name),
     [AppInfo] = rebar_app_discover:find_apps([Dir], all),
     case rebar_app_info:original_vsn(AppInfo) =:= ec_cnv:to_list(Vsn) of
         true ->
