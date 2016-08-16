@@ -124,11 +124,12 @@ add_deps_to_state(State, Parent, [], Dir) ->
 add_deps_to_state(State, Parent, [Dep | Deps], Dir) ->
     {Name, {elixir, Pkg, Vsn}, Level} = Dep,
     {ok, AppInfo} = rebar_app_info:new(to_binary(Name), Vsn, filename:join([Dir, Name])),
-    {true, AppInfo2} = rebar_app_discover:find_app(AppInfo, filename:join([Dir, to_string(Name)]), all),
-    AppInfo3 = rebar_app_info:dep_level(AppInfo2, Level),
-    AppInfo4 = rebar_app_info:source(AppInfo3, {elixir, Pkg, Vsn}),
-    State2 = case lists:member(AppInfo4, rebar_state:lock(State)) of
-                false -> rebar_state:lock(State, AppInfo4);
+    AppInfo2 = rebar_app_info:dep_level(AppInfo, Level),
+    AppInfo3 = rebar_app_info:source(AppInfo2, {elixir, Pkg, Vsn}),
+    AppInfo4 = rebar_app_info:parent(AppInfo3, to_binary(Parent)),
+    {true, AppInfo5} = rebar_app_discover:find_app(AppInfo4, filename:join([Dir, to_string(Name)]), all),
+    State2 = case lists:member(AppInfo5, rebar_state:lock(State)) of
+                false -> rebar_state:lock(State, AppInfo5);
                 true -> State
              end,
     add_deps_to_state(State2, Parent, Deps, Dir).      
