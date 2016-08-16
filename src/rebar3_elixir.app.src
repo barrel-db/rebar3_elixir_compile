@@ -1,5 +1,5 @@
 {application, rebar3_elixir,
- [{description, "A rebar plugin"},
+ [{description, "A rebar plugin to use elixir and mix projects."},
   {vsn, "0.1.0"},
   {registered, []},
   {applications,
@@ -11,7 +11,7 @@
   {env,[]},
   {modules, []},
 
-  {maintainers, []},
-  {licenses, []},
-  {links, []}
+  {maintainers, ["Sushruth Sivaramakrishnan"]},
+  {licenses, ["Apache"]},
+  {links, [{"Github", "https://github.com/barrel-db/rebar3_elixir"}]}
  ]}.

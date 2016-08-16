@@ -7,20 +7,29 @@ Use
 
 Add the plugin to your rebar config:
 
-    {plugins, [
-        { rebar3_elixir, ".*", {git, "https://github.com/barrel-db/rebar3_elixir.git", {branch, "master"}}}
-    ]}.
-    
-    {deps, [
-     {plug, {elixir, "plug" ,"1.1.0"}}
-    ]}.
-    
-    {provider_hooks, [{post, [{compile, {ex, compile}}]}]}.
-    {elixir_opts, 
-      [
-        {env, dev},
-      ]
-    }.
+```erlang
+{erl_opts, [debug_info]}.
+
+{plugins, [
+    { rebar3_elixir, ".*", {git, "https://github.com/barrel-db/rebar3_elixir.git", {branch, "master"}}}
+]}.
+
+{deps, [
+   {httpoison, {elixir, "httpoison" ,"0.9.0"}}
+]}.
+
+{provider_hooks, [
+  {pre, [{compile, {ex, compile}}]}
+]}.
+
+{elixir_opts, 
+  [
+    {env, dev}
+  ]
+}.
+```
+
+Full example in https://github.com/barrel-db/rebar3_elixir/tree/master/examples/demo
 
 If you want to modify elixir bin and lib directories, add to elixir opts the following: 
 
