@@ -1,6 +1,6 @@
 -module(rebar3_elixir_util).
 
--export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3]).
+-export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3,fetch_mix_app_from_dep/2]).
 
 -spec to_binary(binary()|list()|integer()|atom()) -> binary().
 to_binary(V) when is_binary(V) -> V;
@@ -67,6 +67,23 @@ add_mix_locks(State) ->
 
 deps_from_mix_lock(State) ->
     lists:map(fun({D, _, _}) -> D end, add_mix_locks(State)).
+
+fetch_mix_app_from_dep(State, Dep) ->
+    Dir = filename:absname("_elixir_build"),
+    file:make_dir(Dir),
+    {ok, Apps} = rebar_utils:list_dir(Dir),
+    fetch_mix_app_from_dep(State, Dep, Apps, Dir).
+
+fetch_mix_app_from_dep(State, Dep, [App | Apps], Dir) ->
+    Env = rebar_state:get(State, mix_env, ["dev"]),
+    LibsDir = filename:join([Dir, App, "_build/", Env , "lib"]),
+    DepDir = filename:join(LibsDir, Dep),
+    case filelib:is_dir(DepDir) of
+        false -> fetch_mix_app_from_dep(State, Dep, Apps, Dir);
+        _ -> 
+            DepDir
+    end.
+
 
 mix_to_rebar_lock(State, _Dir, []) ->
     [];

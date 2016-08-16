@@ -19,6 +19,7 @@ download(Dir, {elixir, Name, Vsn}, State) ->
         false -> 
             fetch_and_compile(State, Dir, Pkg);
         true ->
+            rebar3_elixir_util:maybe_copy_dir(rebar3_elixir_util:fetch_mix_app_from_dep(State, Name), Dir, false),
             rebar3_elixir_util:maybe_copy_dir(filename:join([rebar_dir:deps_dir(State), Name]), Dir, false)
     end,
     {ok, true}.
