@@ -74,6 +74,9 @@ fetch_mix_app_from_dep(State, Dep) ->
     {ok, Apps} = rebar_utils:list_dir(Dir),
     fetch_mix_app_from_dep(State, Dep, Apps, Dir).
 
+fetch_mix_app_from_dep(State, Dep, [], Dir) ->
+    false;
+
 fetch_mix_app_from_dep(State, Dep, [App | Apps], Dir) ->
     Env = rebar_state:get(State, mix_env, ["dev"]),
     LibsDir = filename:join([Dir, App, "_build/", Env , "lib"]),

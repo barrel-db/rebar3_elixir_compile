@@ -1,6 +1,0 @@
-[{<<"hackney">>,{elixir,"hackney","1.6.1"},0},
- {<<"httpoison">>,{elixir,"httpoison","0.9.0"},0},
- {<<"idna">>,{elixir,"idna","1.2.0"},0},
- {<<"metrics">>,{elixir,"metrics","1.0.1"},0},
- {<<"mimerl">>,{elixir,"mimerl","1.0.2"},0},
- {<<"ssl_verify_fun">>,{elixir,"ssl_verify_fun","1.1.0"},0}].
