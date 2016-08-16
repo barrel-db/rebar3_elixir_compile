@@ -28,6 +28,7 @@ add_deps_to_path(State, [App | Apps]) ->
     State2 = rebar_state:update_code_paths(State, all_deps, TargetDir),
     State3 = case add_mix_locks(State2) of
                 {State2_, NewLock} -> 
+                    code:add_patha(filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"])),
                     rebar_state:set(State2_, mixlock, NewLock);
                 _ -> State2
             end,
@@ -72,7 +73,7 @@ add_mix_locks(State) ->
     {State2, lists:ukeymerge(1, CurrentLock, ExtraLock)}.
 
 deps_from_mix_lock(State) ->
-    {State2, Lock} = add_mix_locks(State),
+    {_State2, Lock} = add_mix_locks(State),
     lists:map(fun({D, _, _}) -> D end, Lock).
 
 fetch_mix_app_from_dep(State, Dep) ->
@@ -81,7 +82,7 @@ fetch_mix_app_from_dep(State, Dep) ->
     {ok, Apps} = rebar_utils:list_dir(Dir),
     fetch_mix_app_from_dep(State, Dep, Apps, Dir).
 
-fetch_mix_app_from_dep(State, Dep, [], Dir) ->
+fetch_mix_app_from_dep(_State, _Dep, [], _Dir) ->
     false;
 
 fetch_mix_app_from_dep(State, Dep, [App | Apps], Dir) ->
@@ -95,7 +96,7 @@ fetch_mix_app_from_dep(State, Dep, [App | Apps], Dir) ->
     end.
 
 
-mix_to_rebar_lock(State, _Dir, []) ->
+mix_to_rebar_lock(_State, _Dir, []) ->
     [];
 
 mix_to_rebar_lock(State, Dir, [App | Apps]) ->
@@ -118,7 +119,7 @@ mix_to_rebar_lock(State, Dir, [App | Apps]) ->
     State2 = add_deps_to_state(State, App, Deps, LibsDir),
     {State2, Deps}.
 
-add_deps_to_state(State, Parent, [], Dir) ->
+add_deps_to_state(State, _Parent, [], _Dir) ->
     State;
 
 add_deps_to_state(State, Parent, [Dep | Deps], Dir) ->
