@@ -2,8 +2,10 @@ rebar3_elixir
 =====
 A rebar3 plugin to use elixir in your applications.
 
-Use
----
+![rebar3_elixir in action](https://raw.githubusercontent.com/barrel-db/rebar3_elixir/master/doc/screenshot.png)
+
+Usage
+-----
 
 Add the plugin to your rebar config:
 
