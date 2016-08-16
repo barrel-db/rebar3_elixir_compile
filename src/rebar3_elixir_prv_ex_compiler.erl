@@ -22,7 +22,9 @@ init(State) ->
 
 do(State) ->
     {ok, State2} = add_elixir_libs(State),
-    {ok, State2}.
+    State3 = rebar3_elixir_util:add_deps_to_path(State2),
+    {ok, State4} = rebar_prv_lock:do(State3),
+    {ok, State4}.
 
 add_elixir_libs(State) ->
     rebar_api:console("===> Adding Elixir Libs", []),

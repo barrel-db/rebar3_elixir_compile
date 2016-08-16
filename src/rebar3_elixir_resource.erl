@@ -14,7 +14,6 @@ download(Dir, {elixir, Name, Vsn}, State) ->
     Pkg = {pkg, Name, Vsn},
     {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
     {deps, Deps} = lists:keyfind(deps, 1 , Config),
-    rebar3_elixir_util:add_deps_to_path(State),
     case isDepThere(Deps, Name, rebar_dir:deps_dir(State)) of 
         false -> 
             fetch_and_compile(State, Dir, Pkg);
