@@ -26,9 +26,11 @@ add_deps_to_path(State, []) ->
 add_deps_to_path(State, [App | Apps]) ->
     TargetDir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
     State2 = rebar_state:update_code_paths(State, all_deps, TargetDir),
-    NewLock = add_mix_locks(State2),
-    [Profile | _] = rebar_state:current_profiles(State2),
-    State3 = rebar_state:set(State2, {deps, Profile}, NewLock),
+    State3 = case add_mix_locks(State2) of
+                {State2_, NewLock} -> 
+                    rebar_state:set(State2_, mixlock, NewLock);
+                _ -> State2
+            end,
     add_deps_to_path(State3, Apps).
 
 add_elixir(State) ->
@@ -62,11 +64,16 @@ add_mix_locks(State) ->
     {ok, Apps} = rebar_utils:list_dir(Dir),
     [Profile | _] = rebar_state:current_profiles(State),
     CurrentLock = rebar_state:get(State, {locks, Profile}, []),
-    ExtraLock = mix_to_rebar_lock(State, Dir, Apps),
-    lists:ukeymerge(1, CurrentLock, ExtraLock).
+    {State2, ExtraLock} = case mix_to_rebar_lock(State, Dir, Apps) of
+        {State2_, ExtraLock_} -> 
+            {State2_, ExtraLock_};
+        _ -> {State, []}
+    end, 
+    {State2, lists:ukeymerge(1, CurrentLock, ExtraLock)}.
 
 deps_from_mix_lock(State) ->
-    lists:map(fun({D, _, _}) -> D end, add_mix_locks(State)).
+    {State2, Lock} = add_mix_locks(State),
+    lists:map(fun({D, _, _}) -> D end, Lock).
 
 fetch_mix_app_from_dep(State, Dep) ->
     Dir = filename:absname("_elixir_build"),
@@ -107,7 +114,24 @@ mix_to_rebar_lock(State, Dir, [App | Apps]) ->
     Lock = lists:ukeymerge(1, DepLocks, RebarLock),
     Env = rebar_state:get(State, mix_env, ["dev"]),
     LibsDir = filename:join([AppDir, "_build/", Env , "lib/"]),
-    lists:filter(fun({D, _, _}) -> is_app_in_dir(rebar_dir:deps_dir(State), to_string(D)) or is_app_in_dir(LibsDir, to_string(D)) end, Lock).
+    Deps = lists:filter(fun({D, _, _}) -> is_app_in_dir(rebar_dir:deps_dir(State), to_string(D)) or is_app_in_dir(LibsDir, to_string(D)) end, Lock),
+    State2 = add_deps_to_state(State, App, Deps, LibsDir),
+    {State2, Deps}.
+
+add_deps_to_state(State, Parent, [], Dir) ->
+    State;
+
+add_deps_to_state(State, Parent, [Dep | Deps], Dir) ->
+    {Name, {elixir, Pkg, Vsn}, Level} = Dep,
+    {ok, AppInfo} = rebar_app_info:new(to_binary(Name), Vsn, filename:join([Dir, Name])),
+    {true, AppInfo2} = rebar_app_discover:find_app(AppInfo, filename:join([Dir, to_string(Name)]), all),
+    AppInfo3 = rebar_app_info:dep_level(AppInfo2, Level),
+    AppInfo4 = rebar_app_info:source(AppInfo3, {elixir, Pkg, Vsn}),
+    State2 = case lists:member(AppInfo4, rebar_state:lock(State)) of
+                false -> rebar_state:lock(State, AppInfo4);
+                true -> State
+             end,
+    add_deps_to_state(State2, Parent, Deps, Dir).      
 
 convert_lock(_Lock, [], _Level) ->
     [];
