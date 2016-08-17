@@ -58,9 +58,9 @@ fetch_and_compile(State, Dir, Pkg = {pkg, Name, _Vsn}) ->
     BaseDirState = rebar_state:set(State2, elixir_base_dir, BaseDir),
     Env = rebar_state:get(BaseDirState, mix_env),
     AppDir = filename:join(BaseDir, Name),
-    LibDir = filename:join([AppDir, "_build/", Env , "lib/"]),
     rebar3_elixir_util:compile_libs(BaseDirState),
-    rebar3_elixir_util:transfer_libs(rebar_state:set(BaseDirState, libs_target_dir, Dir), [Name], LibDir).
+    LibsDir = rebar3_elixir_util:libs_dir(AppDir, Env),
+    rebar3_elixir_util:transfer_libs(rebar_state:set(BaseDirState, libs_target_dir, Dir), [Name], LibsDir).
 
 fetch({pkg, Name_, Vsn_}) ->
     Dir = filename:join([filename:absname("_elixir_build"), Name_]),
