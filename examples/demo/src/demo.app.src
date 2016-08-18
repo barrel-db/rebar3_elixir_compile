@@ -7,8 +7,9 @@
    [kernel,
     stdlib,
     crypto,
-    elixir
-   ]},
+    elixir,
+    macro_app
+   ]}, 
   {env,[]},
   {modules, []},
 

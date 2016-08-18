@@ -1,6 +1,6 @@
 -module(rebar3_elixir_util).
 
--export([add_elixir/1, get_details/1, add_states/4, compile_libs/1, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3,fetch_mix_app_from_dep/2, libs_dir/2]).
+-export([add_elixir/1, get_details/1, add_states/4, add_deps_to_path/3, compile_libs/1, compile_libs/2, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3,fetch_mix_app_from_dep/2, libs_dir/2]).
 
 -spec to_binary(binary()|list()|integer()|atom()) -> binary().
 to_binary(V) when is_binary(V) -> V;
@@ -13,26 +13,36 @@ to_binary(_) -> erlang:error(badarg).
 to_string(Term) when is_binary(Term) ->
     binary_to_list(Term);
 
-to_string(Term) ->
+to_string(Term) when is_binary(Term) ->
     [String] = io_lib:format("~p",[Term]),
-    String.  
-
-add_deps_to_path(State) ->
-    add_deps_to_path(State, deps_from_mix_lock(State)).
+    String;
     
-add_deps_to_path(State, []) ->
+to_string(Term) ->
+    to_string(to_binary(Term)).
+  
+add_deps_to_path(State) ->
+    add_deps_to_path(State, deps_from_mix_lock(State), true).
+    
+add_deps_to_path(State, [], _Check) ->
     State;
 
-add_deps_to_path(State, [App | Apps]) ->
+add_deps_to_path(State, [App | Apps], Check) ->
     TargetDir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
     State2 = rebar_state:update_code_paths(State, all_deps, TargetDir),
-    State3 = case add_mix_locks(State2) of
-                {State2_, NewLock} -> 
-                    code:add_patha(filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"])),
-                    rebar_state:set(State2_, mixlock, NewLock);
-                _ -> State2
-            end,
-    add_deps_to_path(State3, Apps).
+    Dir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
+    State3 = case Check of
+               true -> 
+                    case add_mix_locks(State2) of
+                        {State2_, NewLock} -> 
+                            code:add_patha(Dir),
+                            rebar_state:set(State2_, mixlock, NewLock);
+                        _ -> State2
+                    end;
+                false ->
+                    code:add_patha(Dir),
+                    State2
+             end, 
+    add_deps_to_path(State3, Apps, Check).
 
 add_elixir(State) ->
     {BinDir, Env, Config, LibDir} = rebar3_elixir_util:get_details(State),
@@ -74,7 +84,7 @@ add_mix_locks(State) ->
     {State2, lists:ukeymerge(1, CurrentLock, ExtraLock)}.
 
 deps_from_mix_lock(State) ->
-    {State2, Lock} = add_mix_locks(State),
+    {_State2, Lock} = add_mix_locks(State),
     lists:map(fun({D, _, _}) -> D end, Lock).
 
 fetch_mix_app_from_dep(State, Dep) ->
@@ -83,12 +93,11 @@ fetch_mix_app_from_dep(State, Dep) ->
     {ok, Apps} = rebar_utils:list_dir(Dir),
     fetch_mix_app_from_dep(State, Dep, Apps, Dir).
 
-fetch_mix_app_from_dep(State, Dep, [], Dir) ->
+fetch_mix_app_from_dep(_State, _Dep, [], _Dir) ->
     false;
 
 fetch_mix_app_from_dep(State, Dep, [App | Apps], Dir) ->
     Env = rebar_state:get(State, mix_env, ["dev"]),
-    % LibsDir = filename:join([Dir, App, "_build/", Env , "lib"]),
     LibsDir = libs_dir(filename:join([Dir, App]), Env),
     DepDir = filename:join(LibsDir, Dep),
     case filelib:is_dir(DepDir) of
@@ -121,7 +130,7 @@ mix_to_rebar_lock(State, Dir, [App | Apps]) ->
     State3 = add_deps_to_state(State2, App, Deps, LibsDir),
     {State3, Deps}.
 
-add_deps_to_state(State, Parent, [], Dir) ->
+add_deps_to_state(State, _Parent, [], _Dir) ->
     State;
 
 add_deps_to_state(State, Parent, [Dep | Deps], Dir) ->
@@ -142,7 +151,7 @@ add_deps_to_state(State, Parent, [Dep | Deps], Dir) ->
 is_member(Name, State) ->
     is_member(Name, State, rebar_state:lock(State)).
 
-is_member(Name, State, []) ->
+is_member(_Name, _State, []) ->
     false;
 
 is_member(Name, State, [App | Apps]) ->
@@ -204,17 +213,20 @@ add_states(State, BinDir, Env, Config) ->
     rebar_state:set(ElixirState, mix, filename:join(BinDir, "mix ")).    
 
 compile_libs(State) ->
+    compile_libs(State, false).
+
+compile_libs(State, AddToPath) ->
     Dir = rebar_state:get(State, elixir_base_dir),
     file:make_dir(Dir),
     {ok, Apps} = rebar_utils:list_dir(Dir),
-    {ok, State1} = compile_libs(State, Apps),
+    {ok, State1} = compile_libs(State, Apps, AddToPath),
     Deps = deps_from_mix_lock(State),
-    rebar_state:set(State1, deps, Deps).
+    rebar_state:set(State1, deps, Deps).    
 
-compile_libs(State, []) ->
+compile_libs(State, [], _AddToPath) ->
     {ok, State};          
 
-compile_libs(State, [App | Apps]) ->
+compile_libs(State, [App | Apps], AddToPath) ->
     AppDir = filename:join(rebar_state:get(State, elixir_base_dir), App), 
     Mix = rebar_state:get(State, mix),
     Env = rebar_state:get(State, mix_env),
@@ -232,8 +244,8 @@ compile_libs(State, [App | Apps]) ->
         {_, true} ->
             transfer_libs(State, [App], filename:join(AppDir, "../"));
         {false, _} -> State                 
-    end,        
-    compile_libs(State, Apps).
+    end,
+    compile_libs(State, Apps, AddToPath).
 
 libs_dir(AppDir, Env) ->
     case filelib:is_dir(filename:join([AppDir, "_build", "shared" , "lib"])) of

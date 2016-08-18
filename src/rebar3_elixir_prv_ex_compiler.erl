@@ -21,17 +21,21 @@ init(State) ->
     {ok, rebar_state:add_provider(State, Provider)}.
 
 do(State) ->
-    {ok, State2} = add_elixir_libs(State),
-    State3 = rebar3_elixir_util:add_deps_to_path(State2),
-    {ok, State4} = rebar_prv_lock:do(State3),
-    {ok, State4}.
+    State2 = rebar3_elixir_util:add_deps_to_path(State),
+    {ok, State3} = rebar_prv_lock:do(State2),
+    {ok, State4} = add_elixir_libs(State3),
+    Dir = filename:join(rebar_dir:root_dir(State4), "elixir_libs/"),
+    {ok, Apps} = rebar_utils:list_dir(Dir),
+    State5 = rebar3_elixir_util:add_deps_to_path(State4, Apps, false),
+    {ok, State5}.
 
 add_elixir_libs(State) ->
     rebar_api:console("===> Adding Elixir Libs", []),
     State1 = rebar3_elixir_util:add_elixir(State),
     State2 = rebar_state:set(State1, libs_target_dir, default),
-    BaseDirState = rebar_state:set(State2, elixir_base_dir, filename:join(rebar_dir:root_dir(State2), "elixir_libs/")),
-    State3 = rebar3_elixir_util:compile_libs(BaseDirState),
+    Dir = filename:join(rebar_dir:root_dir(State2), "elixir_libs/"),
+    BaseDirState = rebar_state:set(State2, elixir_base_dir, Dir),
+    State3 = rebar3_elixir_util:compile_libs(BaseDirState, true),
     {ok, State3}.
 
 format_error(Reason) ->
