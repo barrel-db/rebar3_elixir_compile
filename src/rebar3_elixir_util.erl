@@ -39,6 +39,7 @@ add_elixir(State) ->
     MixState = rebar3_elixir_util:add_states(State, BinDir, Env, Config),
     code:add_patha(filename:join(LibDir, "elixir/ebin")),
     code:add_patha(filename:join(LibDir, "mix/ebin")),
+    code:add_patha(filename:join(LibDir, "logger/ebin")),
     MixState.
 
 get_details(State) ->
