@@ -8,7 +8,8 @@
     stdlib,
     crypto,
     elixir,
-    macro_app
+    macro_app,
+    faker
    ]}, 
   {env,[]},
   {modules, []},

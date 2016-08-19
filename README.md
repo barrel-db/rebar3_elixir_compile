@@ -22,6 +22,7 @@ Add the plugin to your rebar config:
 
 {provider_hooks, [
   {pre, [{compile, {ex, compile}}]}
+  %% {pre, [{release, {ex, compile}}]}  
 ]}.
 
 {elixir_opts, 
