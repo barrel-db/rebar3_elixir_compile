@@ -184,7 +184,7 @@ convert_lock(Lock, [Dep | Deps], Level) ->
             convert_lock(Lock, Deps, Level)
     end.
 
-is_app_in_code_path(Name) ->
+is_app_in_code_path(_Name) ->
     % Ignore cache
     false.
 
