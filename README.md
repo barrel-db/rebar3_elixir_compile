@@ -22,7 +22,6 @@ Add the plugin to your rebar config:
 
 {provider_hooks, [
   {pre, [{compile, {ex, compile}}]}
-  %% {pre, [{release, {ex, compile}}]}  
 ]}.
 
 {elixir_opts, 
@@ -34,11 +33,30 @@ Add the plugin to your rebar config:
 
 Full example in https://github.com/barrel-db/rebar3_elixir_compile/tree/master/examples/demo
 
-If you want to modify elixir bin and lib directories, add to elixir opts the following: 
+Directory structure
+--------
+The plugin expects your mix applications to be present in `./elixir_libs`. All mix apps are automatically compiled along with their dependencies. 
 
-    {lib_dir, "/usr/local/lib/elixir/lib/"},
-    {bin_dir, "/usr/local/bin/"}
+The plugin also creates `./_elixir_build` to fetch and compile your dependencies specified in rebar.config.
 
-Place your elixir mix applications in ./elixir_libs.
-The plugin also works with a rebar release.
+
+Release 
+-------
+rebar3_elixir_compile supports releases out of the box. You just need to add a pre release provider hook in your rebar.config
+
+```erlang
+ {pre, [{release, {ex, compile}}]}  
+```
+
+Elixir lib dir
+--------
+
+rebar3_elixir_compile has auto discovery feature. It automatically loads Elixir, Mix and Logger from your Elixir installation. 
+
+If you want to use the apps from another directory, you can add the following to elixir_opts in your rebar.config
+
+```erlang
+{lib_dir, "/usr/local/lib/elixir/lib/"},
+{bin_dir, "/usr/local/bin/"}
+```
 
