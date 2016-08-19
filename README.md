@@ -1,5 +1,6 @@
 rebar3_elixir_compile
 =====
+[![Hex.pm](https://img.shields.io/hexpm/v/rebar3_elixir_compile.svg?maxAge=2592000?style=flat-square)]()
 A rebar3 elixir compiler plugin
 
 ![rebar3_elixir_compile in action](doc/screenshot-release.png)
