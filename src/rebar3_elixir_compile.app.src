@@ -1,5 +1,5 @@
-{application, rebar3_elixir,
- [{description, "A rebar plugin to use elixir and mix projects."},
+{application, rebar3_elixir_compile,
+ [{description, "A rebar3 elixir compiler plugin"},
   {vsn, "1.0.0"},
   {registered, []},
   {applications,

@@ -1,8 +1,8 @@
-rebar3_elixir
+rebar3_elixir_compile
 =====
-A rebar3 plugin to use elixir in your applications.
+A rebar3 elixir compiler plugin
 
-![rebar3_elixir in action](doc/screenshot-release.png)
+![rebar3_elixir_compile in action](doc/screenshot-release.png)
 
 Usage
 -----
@@ -13,11 +13,11 @@ Add the plugin to your rebar config:
 {erl_opts, [debug_info]}.
 
 {plugins, [
-    { rebar3_elixir, ".*", {git, "https://github.com/barrel-db/rebar3_elixir.git", {branch, "master"}}}
+    { rebar3_elixir_compile, ".*", {git, "https://github.com/barrel-db/rebar3_elixir_compile.git", {branch, "master"}}}
 ]}.
 
 {deps, [
-   {httpoison, {elixir, "httpoison" ,"0.9.0"}}
+   {faker, {elixir, "faker" ,"0.6.0"}}
 ]}.
 
 {provider_hooks, [
@@ -32,7 +32,7 @@ Add the plugin to your rebar config:
 }.
 ```
 
-Full example in https://github.com/barrel-db/rebar3_elixir/tree/master/examples/demo
+Full example in https://github.com/barrel-db/rebar3_elixir_compile/tree/master/examples/demo
 
 If you want to modify elixir bin and lib directories, add to elixir opts the following: 
 

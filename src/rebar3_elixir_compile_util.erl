@@ -1,4 +1,4 @@
--module(rebar3_elixir_util).
+-module(rebar3_elixir_compile_util).
 
 -export([add_elixir/1, get_details/1, add_states/4, add_deps_to_path/3, compile_libs/1, compile_libs/2, clean_app/2, transfer_libs/3, to_binary/1, to_string/1, convert_lock/3, add_mix_locks/1, add_deps_to_path/1, is_app_in_dir/2, maybe_copy_dir/3,fetch_mix_app_from_dep/2, libs_dir/2]).
 
@@ -45,8 +45,8 @@ add_deps_to_path(State, [App | Apps], Check) ->
     add_deps_to_path(State3, Apps, Check).
 
 add_elixir(State) ->
-    {BinDir, Env, Config, LibDir} = rebar3_elixir_util:get_details(State),
-    MixState = rebar3_elixir_util:add_states(State, BinDir, Env, Config),
+    {BinDir, Env, Config, LibDir} = rebar3_elixir_compile_util:get_details(State),
+    MixState = rebar3_elixir_compile_util:add_states(State, BinDir, Env, Config),
     code:add_patha(filename:join(LibDir, "elixir/ebin")),
     code:add_patha(filename:join(LibDir, "mix/ebin")),
     code:add_patha(filename:join(LibDir, "logger/ebin")),
@@ -166,7 +166,7 @@ convert_lock(_Lock, [], _Level) ->
 convert_lock(Lock, [Dep | Deps], Level) ->
     case Dep of
         {Name, {hex, Pkg, Vsn, _Hash, _Manager, SubDeps}} ->
-            RebarDep = {rebar3_elixir_util:to_binary(Name), {elixir, rebar3_elixir_util:to_string(Pkg), rebar3_elixir_util:to_string(Vsn)}, Level},
+            RebarDep = {rebar3_elixir_compile_util:to_binary(Name), {elixir, rebar3_elixir_compile_util:to_string(Pkg), rebar3_elixir_compile_util:to_string(Vsn)}, Level},
             case {SubDeps, is_app_in_code_path(Name)} of
               {[], true} ->
                 convert_lock(Lock, Deps, Level);
