@@ -8,7 +8,7 @@
 -behaviour(application).
 
 %% Application callbacks
--export([start/2, stop/1, decimal_demo_run/0]).
+-export([start/2, stop/1, fake_city/0]).
 
 %%====================================================================
 %% API
@@ -17,11 +17,8 @@
 start(_StartType, _StartArgs) ->
     demo_sup:start_link().
 
-decimal_demo_run() ->
-    A = 'Elixir.Decimal':new(7),
-    B = 'Elixir.Decimal':new(4),
-    C = 'Elixir.Decimal':add(A, B),
-    io:format("Result is : ~p", [C]).
+fake_city() ->
+    'Elixir.Faker.Address':city().
 
 %%--------------------------------------------------------------------
 stop(_State) ->
