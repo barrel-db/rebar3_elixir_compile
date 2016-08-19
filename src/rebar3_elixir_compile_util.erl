@@ -185,12 +185,8 @@ convert_lock(Lock, [Dep | Deps], Level) ->
     end.
 
 is_app_in_code_path(Name) ->
-    CodePath = lists:filter(fun (Path) -> lists:member(to_string(Name), filename:split(Path)) and lists:member("rebar3", filename:split(Path)) end, code:get_path()),
-    case CodePath of
-        [] -> false;
-        _ -> 
-            true
-    end.
+    % Ignore cache
+    false.
 
 is_app_in_dir(Dir, App) ->
     filelib:is_dir(filename:join([Dir, App])).
