@@ -11,9 +11,11 @@ lock(_Dir, Source) ->
     Source.
 
 download(Dir, {elixir, Name, Vsn}, State) ->
-    Pkg = {pkg, Name, Vsn},
+
+    Pkg = {elixir, Name, Vsn},
     {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
     {deps, Deps} = lists:keyfind(deps, 1 , Config),
+    rebar_api:console("~p", [Deps]),
     case isDepThere(Deps, Name, rebar_dir:deps_dir(State)) of 
         false -> 
             fetch_and_compile(State, Dir, Pkg);
@@ -24,7 +26,10 @@ download(Dir, {elixir, Name, Vsn}, State) ->
     {ok, true}.
 
 isDepThere(Deps, Name, Dir) ->
-    InConfig = lists:filter(fun ({D, _}) -> rebar3_elixir_util:to_binary(D) == rebar3_elixir_util:to_binary(Name) end, Deps),
+    InConfig = lists:filter(fun 
+                            ({D, _}) -> rebar3_elixir_util:to_binary(D) == rebar3_elixir_util:to_binary(Name); 
+                            (_) -> false
+                            end, Deps),
     InDir = filelib:is_dir(filename:join([Dir, Name, "ebin"])),
     case {InConfig, InDir} of
         {[], true} ->
@@ -37,7 +42,7 @@ isDepThere(Deps, Name, Dir) ->
              false
     end.
 
-needs_update(Dir, {pkg, _Name, Vsn}) ->
+needs_update(Dir, {elixir, _Name, Vsn}) ->
     rebar_api:console("Checking for update, ~p", _Name),
     [AppInfo] = rebar_app_discover:find_apps([Dir], all),
     case rebar_app_info:original_vsn(AppInfo) =:= ec_cnv:to_list(Vsn) of
@@ -50,7 +55,7 @@ needs_update(Dir, {pkg, _Name, Vsn}) ->
 make_vsn(_) ->
     {error, "Replacing version of type elixir not supported."}.
 
-fetch_and_compile(State, Dir, Pkg = {pkg, Name, _Vsn}) ->
+fetch_and_compile(State, Dir, Pkg = {elixir, Name, _Vsn}) ->
     fetch(Pkg),
     State1 = rebar3_elixir_util:add_elixir(State),
     State2 = rebar_state:set(State1, libs_target_dir, default),
@@ -62,7 +67,7 @@ fetch_and_compile(State, Dir, Pkg = {pkg, Name, _Vsn}) ->
     LibsDir = rebar3_elixir_util:libs_dir(AppDir, Env),
     rebar3_elixir_util:transfer_libs(rebar_state:set(BaseDirState, libs_target_dir, Dir), [Name], LibsDir).
 
-fetch({pkg, Name_, Vsn_}) ->
+fetch({elixir, Name_, Vsn_}) ->
     Dir = filename:join([filename:absname("_elixir_build"), Name_]),
     Name = rebar3_elixir_util:to_binary(Name_), 
     Vsn  = rebar3_elixir_util:to_binary(Vsn_),
