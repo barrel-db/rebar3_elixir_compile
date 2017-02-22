@@ -28,7 +28,7 @@ add_deps_to_path(State, [], _Check) ->
 
 add_deps_to_path(State, [App | Apps], Check) ->
     TargetDir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
-    State2 = rebar_state:update_code_paths(State, all_deps, TargetDir),
+    State2 = rebar_state:update_code_paths(State, all_deps, [TargetDir]),
     Dir = filename:join([rebar_dir:deps_dir(State), "../lib", to_string(App), "ebin"]),
     State3 = case Check of
                true -> 
