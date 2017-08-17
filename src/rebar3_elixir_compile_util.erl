@@ -53,7 +53,7 @@ add_elixir(State) ->
     MixState.
 
 get_details(State) ->
-    Config = rebar_state:get(State, elixir_opts),
+    Config = rebar_state:get(State, elixir_opts, []),
     BinDir = case lists:keyfind(bin_dir, 1, Config) of
                 false -> 
                     {ok, ElixirBin_} = find_executable("elixir"),
