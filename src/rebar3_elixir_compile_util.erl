@@ -63,7 +63,7 @@ get_details(State) ->
 
     LibDir = case lists:keyfind(lib_dir, 1, Config) of
                 false -> 
-                    {ok, ElixirLibs_} = rebar_utils:sh("elixir -e 'IO.puts :code.lib_dir(:elixir)'", []),
+                    {ok, ElixirLibs_} = rebar_utils:sh("elixir -e \"IO.puts :code.lib_dir(:elixir)\"", []),
                     filename:join(re:replace(ElixirLibs_, "\\s+", "", [global,{return,list}]), "../");
                 {lib_dir, Dir2} -> Dir2
              end,            
