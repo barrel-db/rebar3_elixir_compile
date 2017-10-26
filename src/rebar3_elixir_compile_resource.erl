@@ -2,6 +2,9 @@
 
 -behaviour(rebar_resource).
 
+-define(DEFAULT_CDN_SITE, "https://repo.hex.pm").
+-define(CDN_TARBALL_LOCATION, "/tarballs").
+
 -export([lock/2
         ,download/3
         ,needs_update/2
@@ -10,12 +13,10 @@
 lock(_Dir, Source) ->
     Source.
 
-download(Dir, {elixir, Name, Vsn}, State) ->
-
-    Pkg = {elixir, Name, Vsn},
+download(Dir, {elixir, Name, _Vsn} = Pkg, State) ->
     {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
     {deps, Deps} = lists:keyfind(deps, 1 , Config),
-    case isDepThere(Deps, Name, rebar_dir:deps_dir(State)) of 
+    case is_dep_there(Deps, Name, rebar_dir:deps_dir(State)) of 
         false -> 
             fetch_and_compile(State, Dir, Pkg);
         true ->
@@ -24,7 +25,7 @@ download(Dir, {elixir, Name, Vsn}, State) ->
     end,
     {ok, true}.
 
-isDepThere(Deps, Name, Dir) ->
+is_dep_there(Deps, Name, Dir) ->
     InConfig = lists:filter(fun 
                             ({D, _}) -> rebar3_elixir_compile_util:to_binary(D) == rebar3_elixir_compile_util:to_binary(Name); 
                             (_) -> false
@@ -54,8 +55,9 @@ needs_update(Dir, {elixir, _Name, Vsn}) ->
 make_vsn(_) ->
     {error, "Replacing version of type elixir not supported."}.
 
-fetch_and_compile(State, Dir, Pkg = {elixir, Name, _Vsn}) ->
-    fetch(Pkg),
+fetch_and_compile(State, Dir, {elixir, Name, _Vsn} = Pkg) ->
+    CDN = cdn(State),
+    fetch(Pkg, CDN),
     State1 = rebar3_elixir_compile_util:add_elixir(State),
     State2 = rebar_state:set(State1, libs_target_dir, default),
     BaseDir = filename:join(rebar_dir:root_dir(State2), "_elixir_build/"),
@@ -65,14 +67,18 @@ fetch_and_compile(State, Dir, Pkg = {elixir, Name, _Vsn}) ->
     rebar3_elixir_compile_util:compile_libs(BaseDirState),
     LibsDir = rebar3_elixir_compile_util:libs_dir(AppDir, Env),
     rebar3_elixir_compile_util:transfer_libs(rebar_state:set(BaseDirState, libs_target_dir, Dir), [Name], LibsDir).
+  
+cdn(State) ->
+  Opts = rebar_state:get(State, elixir_opts, []),
+  CDNSite = proplists:get_value(cdn, Opts, ?DEFAULT_CDN_SITE),
+  CDNSite ++ ?CDN_TARBALL_LOCATION.
 
-fetch({elixir, Name_, Vsn_}) ->
+fetch({elixir, Name_, Vsn_}, CDN) ->
     Dir = filename:join([filename:absname("_elixir_build"), Name_]),
     Name = rebar3_elixir_compile_util:to_binary(Name_), 
     Vsn  = rebar3_elixir_compile_util:to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->
-            CDN = "https://repo.hex.pm/tarballs",
             Package = binary_to_list(<<Name/binary, "-", Vsn/binary, ".tar">>),
             Url = string:join([CDN, Package], "/"),
             case request(Url) of

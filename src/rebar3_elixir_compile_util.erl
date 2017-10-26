@@ -226,10 +226,7 @@ compile_libs(State, [App | Apps], AddToPath) ->
     AppDir = filename:join(rebar_state:get(State, elixir_base_dir), App), 
     Mix = rebar_state:get(State, mix),
     Env = rebar_state:get(State, mix_env),
-    Profile = case Env of
-        dev -> ""; 
-        prod -> "MIX_ENV=prod "
-    end,    
+    Profile = profile(Env),
     case {ec_file:exists(filename:join(AppDir, "mix.exs")), ec_file:exists(filename:join(AppDir, "rebar.config"))} of
         {true, false} -> 
             rebar_utils:sh(Profile ++ Mix ++ "deps.get", [{cd, AppDir}, {use_stdout, true}]),
@@ -242,6 +239,12 @@ compile_libs(State, [App | Apps], AddToPath) ->
         {false, _} -> State                 
     end,
     compile_libs(State, Apps, AddToPath).
+
+profile(Env) ->
+  case Env of
+    dev -> ""; 
+    prod -> "env MIX_ENV=" ++ atom_to_list(Env) ++ " "
+  end.   
 
 libs_dir(AppDir, Env) ->
     case filelib:is_dir(filename:join([AppDir, "_build", "shared" , "lib"])) of
