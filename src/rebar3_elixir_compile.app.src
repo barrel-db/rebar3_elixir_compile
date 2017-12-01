@@ -1,6 +1,6 @@
 {application, rebar3_elixir_compile,
  [{description, "A rebar3 elixir compiler plugin"},
-  {vsn, "1.0.0"},
+  {vsn, "1.1.0"},
   {registered, []},
   {applications,
    [kernel,
