@@ -63,7 +63,7 @@ get_details(State) ->
 
     LibDir = case lists:keyfind(lib_dir, 1, Config) of
                 false -> 
-                    {ok, ElixirLibs_} = rebar_utils:sh("elixir -e \"IO.puts :code.lib_dir(:elixir)\"", []),
+                    {ok, ElixirLibs_} = sh("elixir -e \"IO.puts :code.lib_dir(:elixir)\"", []),
                     filename:join(re:replace(ElixirLibs_, "\\s+", "", [global,{return,list}]), "../");
                 {lib_dir, Dir2} -> Dir2
              end,            
@@ -229,8 +229,8 @@ compile_libs(State, [App | Apps], AddToPath) ->
     Profile = profile(Env),
     case {ec_file:exists(filename:join(AppDir, "mix.exs")), ec_file:exists(filename:join(AppDir, "rebar.config"))} of
         {true, false} -> 
-            rebar_utils:sh(Profile ++ Mix ++ "deps.get", [{cd, AppDir}, {use_stdout, true}]),
-            rebar_utils:sh(Profile ++ Mix ++ "compile", [{cd, AppDir}, {use_stdout, true}]),
+            sh(Profile ++ Mix ++ "deps.get", [{cd, AppDir}, {use_stdout, true}]),
+            sh(Profile ++ Mix ++ "compile", [{cd, AppDir}, {use_stdout, true}]),
             LibsDir = libs_dir(AppDir, Env),
             {ok, Libs} = file:list_dir_all(LibsDir),
             transfer_libs(State, Libs, LibsDir);
@@ -282,3 +282,6 @@ maybe_copy_dir(Source, Target, CreateNew) ->
             ec_file:remove(TargetDir, [recurisve]),
             ec_file:copy(Source, TargetDir, [recursive])
     end.    
+
+sh(Command, Options) ->
+    rebar_utils:sh(Command, [{env, [{"ERL_FLAGS", ""}]} | Options]).
