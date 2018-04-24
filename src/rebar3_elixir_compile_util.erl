@@ -34,8 +34,13 @@ add_deps_to_path(State, [App | Apps], Check) ->
                true -> 
                     case add_mix_locks(State2) of
                         {State2_, NewLock} -> 
+                            State2_1 = lists:foldl(fun
+                                (DepName, S) ->
+                                    DepPath = rebar_dir:deps_dir(State) ++ "/../lib/" ++ DepName ++ "/ebin",
+                                    rebar_state:update_code_paths(S, all_deps, [DepPath])
+                            end, State2_, get_deps_for_app(State2_, App)),
                             code:add_patha(Dir),
-                            rebar_state:set(State2_, mixlock, NewLock);
+                            rebar_state:set(State2_1, mixlock, NewLock);
                         _ -> State2
                     end;
                 false ->
@@ -43,6 +48,14 @@ add_deps_to_path(State, [App | Apps], Check) ->
                     State2
              end, 
     add_deps_to_path(State3, Apps, Check).
+
+get_deps_for_app(State, App) ->
+    AppDir = filename:join(filename:join(rebar_dir:root_dir(State), "_elixir_build/"), App),
+    Env = rebar_state:get(State, mix_env, "dev"),
+    case file:list_dir_all(libs_dir(AppDir, Env)) of
+        {ok, Libs} -> Libs;
+        _ -> []
+    end.
 
 add_elixir(State) ->
     {BinDir, Env, Config, LibDir} = rebar3_elixir_compile_util:get_details(State),
