@@ -1,0 +1,4 @@
+[{<<"hex_erl">>,
+  {git,"https://github.com/hexpm/hex_erl.git",
+       {ref,"ca37bcdd24268e9433d44fb797e2cc8d16269c2b"}},
+  0}].

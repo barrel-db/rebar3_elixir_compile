@@ -79,10 +79,8 @@ fetch({elixir, Name_, Vsn_}, CDN) ->
     Vsn  = rebar3_elixir_compile_util:to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->
-            Package = binary_to_list(<<Name/binary, "-", Vsn/binary, ".tar">>),
-            Url = string:join([CDN, Package], "/"),
-            case request(Url) of
-                {ok, Binary} ->
+            case hex_repo:get_tarball(Name, Vsn, [{repo, #{uri => list_to_binary(CDN)}}]) of
+                {ok, Binary, _} ->
                     {ok, Contents} = extract(Binary),
                     ok = erl_tar:extract({binary, Contents}, [{cwd, Dir}, compressed]);
                 _ ->
@@ -96,14 +94,3 @@ extract(Binary) ->
     {ok, Files} = erl_tar:extract({binary, Binary}, [memory]),
     {"contents.tar.gz", Contents} = lists:keyfind("contents.tar.gz", 1, Files),
     {ok, Contents}.
-
-request(Url) ->
-    case httpc:request(get, {Url, []},
-                       [{relaxed, true}],
-                       [{body_format, binary}],
-                       rebar) of
-        {ok, {{_Version, 200, _Reason}, _Headers, Body}} ->
-            {ok, Body};
-        Error ->
-            Error
-    end.
