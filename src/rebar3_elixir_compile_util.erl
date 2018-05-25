@@ -67,7 +67,14 @@ get_details(State) ->
                     filename:join(re:replace(ElixirLibs_, "\\s+", "", [global,{return,list}]), "../");
                 {lib_dir, Dir2} -> Dir2
              end,            
-    {env, Env} = lists:keyfind(env, 1, Config),
+    Env =
+        case os:getenv("MIX_ENV") of
+            false ->
+                {env, E} = lists:keyfind(env, 1, Config),
+                E;
+            E ->
+                list_to_atom(E)
+        end,
     {BinDir, Env, Config, LibDir}.
 
 add_mix_locks(State) ->
