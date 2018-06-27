@@ -10,8 +10,8 @@
         ,needs_update/2
         ,make_vsn/1]).
 
-lock(_Dir, Source) ->
-    Source.
+lock(_Dir, {elixir, Name, Vsn}) ->
+    {elixir, rebar3_elixir_compile_util:to_binary(Name), rebar3_elixir_compile_util:to_binary(Vsn)}.
 
 download(Dir, {elixir, Name, _Vsn} = Pkg, State) ->
     {ok, Config} = file:consult(filename:join([rebar_dir:root_dir(State), "rebar.config"])),
