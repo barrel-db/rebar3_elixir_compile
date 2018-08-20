@@ -120,14 +120,20 @@ mix_to_rebar_lock(State, _Dir, []) ->
 mix_to_rebar_lock(State, Dir, [App | Apps]) ->
     AppDir = filename:join(Dir, App),
     application:ensure_all_started(elixir),
-    AppLock = case 'Elixir.File':read(lockfile(AppDir)) of
+
+    Lockfile = lockfile(AppDir),
+    AppLock =
+        %% This code i basically an Erlang transcribed version of Mix.Dep.Lock.read()
+        case 'Elixir.File':read(Lockfile) of
             {ok,Info} ->
-                case 'Elixir.Code':eval_string(Info, [], [file, lockfile(AppDir)]) of
-                    {Lock_, _binding}  -> 'Elixir.Enum':to_list(Lock_)
-                end;
+                Opts = [{file, Lockfile}, {warn_on_unnecessary_quotes, false}],
+                {ok, Quoted} = 'Elixir.Code':string_to_quoted(Info, Opts),
+                {EvalRes, _Binding} = 'Elixir.Code':eval_quoted(Quoted, Opts),
+                'Elixir.Enum':to_list(EvalRes);
             {error, _} ->
                 []
-    end,
+        end,
+
     RebarLock = convert_lock(AppLock, AppLock, 1),
     {State2, DepLocks} = mix_to_rebar_lock(State, Dir, Apps),
     Lock = lists:ukeymerge(1, DepLocks, RebarLock),
@@ -199,7 +205,7 @@ is_app_in_dir(Dir, App) ->
     filelib:is_dir(filename:join([Dir, App])).
 
 lockfile(AppDir) ->
-    filename:join(AppDir, "mix.lock").
+    iolist_to_binary(filename:join(AppDir, "mix.lock")).
 
 
 find_executable(Name) ->
