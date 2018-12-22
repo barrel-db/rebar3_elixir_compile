@@ -6,7 +6,8 @@
    [kernel,
     stdlib,
     crypto,
-    elixir
+    elixir,
+    hex_core
    ]},
   {env,[]},
   {modules, []},

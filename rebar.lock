@@ -1,4 +1,6 @@
-[{<<"hex_erl">>,
-  {git,"https://github.com/hexpm/hex_erl.git",
-       {ref,"ca37bcdd24268e9433d44fb797e2cc8d16269c2b"}},
-  0}].
+{"1.1.0",
+[{<<"hex_core">>,{pkg,<<"hex_core">>,<<"0.2.0">>},0}]}.
+[
+{pkg_hash,[
+ {<<"hex_core">>, <<"3A7EACCFB8ADD3FF05D950C10ED5BDB5D0C48C988EBBC5D7AE2A55498F0EFF1B">>}]}
+].

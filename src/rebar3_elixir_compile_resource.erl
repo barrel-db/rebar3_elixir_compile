@@ -79,7 +79,13 @@ fetch({elixir, Name_, Vsn_}, CDN) ->
     Vsn  = rebar3_elixir_compile_util:to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->
-            case hex_repo:get_tarball(Name, Vsn, [{repo, #{uri => list_to_binary(CDN)}}]) of
+            Config = #{
+              http_adapter => hex_http_httpc,
+              http_adapter_config => #{profile => default},
+              http_user_agent_fragment => <<"(httpc)">>,
+              repo_url => list_to_binary(CDN)
+            },
+            case hex_repo:get_tarball(Config, Name, Vsn) of
                 {ok, Binary, _} ->
                     {ok, Contents} = extract(Binary),
                     ok = erl_tar:extract({binary, Contents}, [{cwd, Dir}, compressed]);
