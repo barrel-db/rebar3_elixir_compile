@@ -1,6 +1,6 @@
 {"1.1.0",
-[{<<"hex_core">>,{pkg,<<"hex_core">>,<<"0.2.0">>},0}]}.
+[{<<"hex_core">>,{pkg,<<"hex_core">>,<<"0.2.1">>},0}]}.
 [
 {pkg_hash,[
- {<<"hex_core">>, <<"3A7EACCFB8ADD3FF05D950C10ED5BDB5D0C48C988EBBC5D7AE2A55498F0EFF1B">>}]}
+ {<<"hex_core">>, <<"AC4A05DF753A728866A5BC0A11CB9719684C2DCD1837CE96392061B01CC69258">>}]}
 ].
