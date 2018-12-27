@@ -82,7 +82,7 @@ fetch({elixir, Name_, Vsn_}, CDN) ->
             Config = #{
               http_adapter => hex_http_httpc,
               http_adapter_config => #{profile => default},
-              http_user_agent_fragment => <<"(httpc)">>,
+              http_user_agent_fragment => user_agent(),
               repo_url => list_to_binary(CDN)
             },
             case hex_repo:get_tarball(Config, Name, Vsn) of
@@ -100,3 +100,13 @@ extract(Binary) ->
     {ok, Files} = erl_tar:extract({binary, Binary}, [memory]),
     {"contents.tar.gz", Contents} = lists:keyfind("contents.tar.gz", 1, Files),
     {ok, Contents}.
+
+user_agent() ->
+    AppName = rebar3_elixir_compile,
+    AppVsn = case lists:keyfind(AppName, 1, application:loaded_applications()) of
+                 {_, _, Ver} ->
+                     Ver;
+                 false ->
+                     "unknown"
+             end,
+    list_to_binary([atom_to_list(AppName), "/", AppVsn, " (httpc)"]).
