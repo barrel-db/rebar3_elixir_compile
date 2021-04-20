@@ -79,10 +79,14 @@ fetch({elixir, Name_, Vsn_}, CDN) ->
     Vsn  = rebar3_elixir_compile_util:to_binary(Vsn_),
     case filelib:is_dir(Dir) of
         false ->
-            Package = binary_to_list(<<Name/binary, "-", Vsn/binary, ".tar">>),
-            Url = string:join([CDN, Package], "/"),
-            case request(Url) of
-                {ok, Binary} ->
+            Config = #{
+              http_adapter => hex_http_httpc,
+              http_adapter_config => #{profile => default},
+              http_user_agent_fragment => user_agent(),
+              repo_url => list_to_binary(CDN)
+            },
+            case hex_repo:get_tarball(Config, Name, Vsn) of
+                {ok, Binary, _} ->
                     {ok, Contents} = extract(Binary),
                     ok = erl_tar:extract({binary, Contents}, [{cwd, Dir}, compressed]);
                 _ ->
@@ -97,13 +101,12 @@ extract(Binary) ->
     {"contents.tar.gz", Contents} = lists:keyfind("contents.tar.gz", 1, Files),
     {ok, Contents}.
 
-request(Url) ->
-    case httpc:request(get, {Url, []},
-                       [{relaxed, true}],
-                       [{body_format, binary}],
-                       rebar) of
-        {ok, {{_Version, 200, _Reason}, _Headers, Body}} ->
-            {ok, Body};
-        Error ->
-            Error
-    end.
+user_agent() ->
+    AppName = rebar3_elixir_compile,
+    AppVsn = case lists:keyfind(AppName, 1, application:loaded_applications()) of
+                 {_, _, Ver} ->
+                     Ver;
+                 false ->
+                     "unknown"
+             end,
+    list_to_binary([atom_to_list(AppName), "/", AppVsn, " (httpc)"]).
